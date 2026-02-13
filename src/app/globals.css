@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary-blue: #1E3A8A;
+  --bg-white: #FFFFFF;
+  --accent-teal: #0D9488;
+  --text-black: #111827;
+  --text-gray: #4B5563;
+}
+
+@layer base {
+  body {
+    @apply bg-white text-soft-black font-inter antialiased;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-poppins font-bold tracking-tight;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-accent text-white px-6 py-3 rounded-lg font-medium transition-all duration-300 hover:bg-opacity-90 hover:shadow-lg active:scale-95;
+  }
+  .btn-outline {
+    @apply border-2 border-primary text-primary px-6 py-3 rounded-lg font-medium transition-all duration-300 hover:bg-primary hover:text-white active:scale-95;
+  }
+}

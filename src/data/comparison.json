@@ -1,0 +1,42 @@
+[
+    {
+        "name": "Sony WH-1000XM5",
+        "image": "https://images.unsplash.com/photo-1698242488665-9831411ce1a6?auto=format&fit=crop&q=80&w=400",
+        "price": "$348",
+        "rating": 4.8,
+        "features": [
+            "Best ANC",
+            "30-hr Battery",
+            "Multipoint Connect",
+            "Touch Controls"
+        ],
+        "isBestOverall": true,
+        "affiliateLink": "https://amazon.com/sony-wh-1000xm5"
+    },
+    {
+        "name": "Bose QC Ultra",
+        "image": "https://images.unsplash.com/photo-1678122394503-4c9197f264d1?auto=format&fit=crop&q=80&w=400",
+        "price": "$429",
+        "rating": 4.7,
+        "features": [
+            "Great Comfort",
+            "Immersive Audio",
+            "Custom Modes",
+            "Button Controls"
+        ],
+        "affiliateLink": "https://amazon.com/bose-qc-ultra"
+    },
+    {
+        "name": "Sennheiser M4",
+        "image": "https://images.unsplash.com/photo-1662998634351-76676fa4c541?auto=format&fit=crop&q=80&w=400",
+        "price": "$299",
+        "rating": 4.6,
+        "features": [
+            "Sound Quality",
+            "60-hr Battery",
+            "Clear Calls",
+            "Minimalist Design"
+        ],
+        "affiliateLink": "https://amazon.com/sennheiser-momentum-4"
+    }
+]

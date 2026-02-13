@@ -1,0 +1,12 @@
+{
+    "id": "premium-1",
+    "name": "MacBook Pro M4 Max (16-inch)",
+    "brand": "Apple",
+    "description": "The most powerful laptop ever made. Period. Perfect for video editors, developers, and creative professionals who need peak performance on the go.",
+    "price": "$3,499",
+    "rating": 5.0,
+    "reviews": 120,
+    "image": "https://images.unsplash.com/photo-1517336712461-81d779422e5e?auto=format&fit=crop&q=80&w=1200",
+    "isEditorChoice": true,
+    "affiliateLink": "https://amazon.com/macbook-pro-m4-max"
+}
