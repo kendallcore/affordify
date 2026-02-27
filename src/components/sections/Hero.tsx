@@ -1,9 +1,68 @@
 "use client";
 
-import { Search, TrendingUp } from "lucide-react";
+import { useEffect, useMemo, useRef } from "react";
+import { Search } from "lucide-react";
 import { motion } from "framer-motion";
+import type { PinterestBoard } from "@/data/pinterest-boards";
 
-export default function Hero() {
+interface HeroProps {
+    searchTerm: string;
+    isSearchOpen: boolean;
+    matchingBoards: PinterestBoard[];
+    onSearchChange: (value: string) => void;
+    onSearchOpen: (open: boolean) => void;
+}
+
+export default function Hero({
+    searchTerm,
+    isSearchOpen,
+    matchingBoards,
+    onSearchChange,
+    onSearchOpen
+}: HeroProps) {
+    const inputRef = useRef<HTMLInputElement | null>(null);
+    const isSearching = useMemo(() => searchTerm.trim().length > 0, [searchTerm]);
+
+    useEffect(() => {
+        function handleKeyDown(event: KeyboardEvent) {
+            const target = event.target as HTMLElement | null;
+            const isEditable =
+                target?.tagName === "INPUT" ||
+                target?.tagName === "TEXTAREA" ||
+                target?.isContentEditable;
+            if (isEditable || event.metaKey || event.ctrlKey || event.altKey) {
+                return;
+            }
+            if (!isSearchOpen && event.key.length === 1) {
+                onSearchOpen(true);
+                onSearchChange(`${searchTerm}${event.key}`);
+                requestAnimationFrame(() => {
+                    inputRef.current?.focus();
+                });
+            }
+        }
+
+        // Expand the search bar when the user starts typing anywhere on the page.
+        window.addEventListener("keydown", handleKeyDown);
+        return () => {
+            window.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [isSearchOpen, onSearchChange, onSearchOpen, searchTerm]);
+
+    useEffect(() => {
+        if (isSearchOpen) {
+            requestAnimationFrame(() => {
+                inputRef.current?.focus();
+            });
+        }
+    }, [isSearchOpen]);
+
+    useEffect(() => {
+        if (searchTerm.trim().length > 0 && !isSearchOpen) {
+            onSearchOpen(true);
+        }
+    }, [isSearchOpen, onSearchOpen, searchTerm]);
+
     return (
         <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
             {/* Background Blobs */}
@@ -17,7 +76,7 @@ export default function Hero() {
                     transition={{ duration: 0.6 }}
                 >
                     <div className="inline-flex items-center space-x-2 bg-primary/10 text-primary px-4 py-2 rounded-full mb-6">
-                        <TrendingUp size={16} />
+                        <Search size={16} />
                         <span className="text-sm font-semibold uppercase tracking-wider">Smart Shopping Companion</span>
                     </div>
 
@@ -30,33 +89,53 @@ export default function Hero() {
                     </p>
 
                     <div className="max-w-3xl mx-auto relative mb-12">
-                        <div className="flex items-center bg-white shadow-premium border border-gray-100 rounded-2xl p-2 transition-all focus-within:shadow-premium-hover focus-within:border-primary/20">
-                            <div className="px-4 text-soft-gray">
+                        {/* Search is collapsed by default and expands only when actively searching. */}
+                        <div
+                            className={`mx-auto flex items-center bg-white shadow-premium border border-gray-100 rounded-2xl p-2 transition-all duration-300 focus-within:shadow-premium-hover focus-within:border-primary/20 ${isSearchOpen ? "w-full opacity-100" : "w-14 opacity-80"}`}
+                        >
+                            <button
+                                type="button"
+                                onClick={() => onSearchOpen(!isSearchOpen)}
+                                aria-label="Toggle search"
+                                className="px-4 text-soft-gray hover:text-primary transition-colors"
+                            >
                                 <Search size={24} />
-                            </div>
+                            </button>
                             <input
+                                ref={inputRef}
                                 type="text"
-                                placeholder="Search for premium tech, home essentials, and more..."
-                                className="w-full py-4 text-lg outline-none bg-transparent"
+                                placeholder="Search products or Pinterest boards..."
+                                value={searchTerm}
+                                onChange={(event) => onSearchChange(event.target.value)}
+                                className={`w-full py-4 text-lg outline-none bg-transparent transition-all duration-300 ${isSearchOpen ? "opacity-100" : "opacity-0 pointer-events-none w-0"}`}
                             />
-                            <button className="hidden sm:block btn-primary whitespace-nowrap px-8">
+                            <button className={`hidden sm:block btn-primary whitespace-nowrap px-8 transition-all duration-300 ${isSearchOpen ? "opacity-100" : "opacity-0 pointer-events-none w-0 px-0"}`}>
                                 Search Deals
                             </button>
                         </div>
-                        <div className="mt-4 flex flex-wrap justify-center gap-3">
-                            <span className="text-sm text-soft-gray">Trending:</span>
-                            <a href="#" className="text-sm text-primary hover:underline">iPhone 16 Pro</a>
-                            <a href="#" className="text-sm text-primary hover:underline">Herman Miller</a>
-                            <a href="#" className="text-sm text-primary hover:underline">Sony WH-1000XM5</a>
-                        </div>
+
+                        {isSearching && matchingBoards.length > 0 && (
+                            <div className="mt-4 flex flex-wrap justify-center gap-3">
+                                <span className="text-sm text-soft-gray">Matching boards:</span>
+                                {matchingBoards.map((board) => (
+                                    <a
+                                        key={board.url}
+                                        href={board.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-sm text-primary hover:underline"
+                                    >
+                                        {board.name}
+                                    </a>
+                                ))}
+                            </div>
+                        )}
+                        {/* Trending callouts removed to keep focus on search and pinned products. */}
                     </div>
 
                     <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6">
                         <button className="btn-primary w-full sm:w-auto px-10 py-4 text-lg">
                             Explore Top Deals
-                        </button>
-                        <button className="btn-outline w-full sm:w-auto px-10 py-4 text-lg">
-                            Read Expert Reviews
                         </button>
                     </div>
                 </motion.div>
