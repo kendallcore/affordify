@@ -32,45 +32,19 @@ export default function Footer() {
                     </div>
 
                     <div>
-                        <h4 className="text-soft-black font-bold mb-6">Product</h4>
+                        <h4 className="text-soft-black font-bold mb-6">Support</h4>
                         <ul className="space-y-4 text-sm text-soft-gray">
-                            <li><Link href="/deals" className="hover:text-primary transition-colors">Top Deals</Link></li>
-                            <li><Link href="/best-sellers" className="hover:text-primary transition-colors">Best Sellers</Link></li>
-                            <li><Link href="/price-tracking" className="hover:text-primary transition-colors">Price Tracking</Link></li>
-                            <li><Link href="/guides" className="hover:text-primary transition-colors">Buying Guides</Link></li>
-                        </ul>
-                    </div>
-
-                    <div>
-                        <h4 className="text-soft-black font-bold mb-6">Company</h4>
-                        <ul className="space-y-4 text-sm text-soft-gray">
-                            <li><Link href="/about" className="hover:text-primary transition-colors">About Us</Link></li>
-                            <li><Link href="/careers" className="hover:text-primary transition-colors">Careers</Link></li>
-                            <li><Link href="/contact" className="hover:text-primary transition-colors">Contact</Link></li>
-                            <li><Link href="/legal" className="hover:text-primary transition-colors">Legal</Link></li>
-                        </ul>
-                    </div>
-
-                    <div>
-                        <h4 className="text-soft-black font-bold mb-6">Legal</h4>
-                        <ul className="space-y-4 text-sm text-soft-gray">
+                            <li><a href="mailto:kendall.core01@gmail.com" className="hover:text-primary transition-colors">Contact Us</a></li>
                             <li><Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link></li>
-                            <li><Link href="/terms" className="hover:text-primary transition-colors">Terms of Service</Link></li>
-                            <li><Link href="/disclosure" className="hover:text-primary transition-colors">Affiliate Disclosure</Link></li>
                         </ul>
                     </div>
                 </div>
 
                 <div className="border-t border-gray-100 pt-10 flex flex-col md:flex-row justify-between items-center gap-6">
                     <p className="text-xs text-soft-gray max-w-2xl text-center md:text-left">
-                        &copy; {new Date().getFullYear()} Affordify Inc. All rights reserved.
+                        &copy; {new Date().getFullYear()} Affordify. All rights reserved.
                         <span className="block mt-2">Affiliate Disclosure: Affordify is supported by its audience. When you purchase through links on our site, we may earn an affiliate commission.</span>
                     </p>
-                    <div className="flex space-x-6 text-xs text-soft-gray font-medium">
-                        <Link href="/sitemap" className="hover:text-primary">Sitemap</Link>
-                        <Link href="/security" className="hover:text-primary">Security</Link>
-                        <Link href="/cookies" className="hover:text-primary">Cookies</Link>
-                    </div>
                 </div>
             </div>
         </footer>
