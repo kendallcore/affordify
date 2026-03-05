@@ -1,58 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import ProductCard from "../ui/ProductCard";
-import { PINTEREST_BOARDS } from "@/data/pinterest-boards";
-
-const API_BASE =
-    process.env.NEXT_PUBLIC_AFFODIFY_API_BASE || "http://localhost:5000";
-
-interface ApiProduct {
-    title?: string;
-    image?: string;
-    link?: string;
-    price?: string;
-    description?: string;
-}
+import PinterestDealCard from "../ui/PinterestDealCard";
 
 interface FeaturedDealsProps {
     searchTerm: string;
     matchingBoardsCount: number;
 }
 
-const FALLBACK_PRODUCTS: ApiProduct[] = [
-    {
-        title: "Minimalist Desk Organizer",
-        description: "Pinned from Pinterest: tidy up your workspace with a clean, affordable desk setup.",
-        image: "https://images.unsplash.com/photo-1519710164239-da123dc03ef4?auto=format&fit=crop&w=600&q=80",
-        price: "₹1,299",
-        link: "https://www.amazon.in/"
-    },
-    {
-        title: "Cozy Knit Throw Blanket",
-        description: "Pinterest-inspired cozy layering for affordable deals on Amazon.",
-        image: "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=600&q=80",
-        price: "₹2,199",
-        link: "https://www.amazon.in/"
-    },
-    {
-        title: "Skin-Glow Serum Bundle",
-        description: "Trending Pinterest products curated for Amazon deals India shoppers.",
-        image: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=600&q=80",
-        price: "₹999",
-        link: "https://www.amazon.in/"
-    },
-    {
-        title: "Neutral Home Decor Set",
-        description: "Board-pinned home decor favorites with affiliate-ready Amazon links.",
-        image: "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=600&q=80",
-        price: "₹3,450",
-        link: "https://www.amazon.in/"
-    }
-];
+interface PinterestDeal {
+    image: string;
+    title: string;
+    description: string;
+    link: string;
+}
 
 export default function FeaturedDeals({ searchTerm, matchingBoardsCount }: FeaturedDealsProps) {
-    const [products, setProducts] = useState<ApiProduct[]>([]);
+    const [pins, setPins] = useState<PinterestDeal[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isFiltering, setIsFiltering] = useState(false);
@@ -62,19 +26,17 @@ export default function FeaturedDeals({ searchTerm, matchingBoardsCount }: Featu
 
         async function load() {
             try {
-                const res = await fetch(`${API_BASE}/api/products`, {
-                    cache: "no-store"
-                });
+                const res = await fetch("/api/pinterest/pins", { cache: "no-store" });
                 if (!res.ok) {
                     throw new Error(`Request failed: ${res.status}`);
                 }
-                const data = (await res.json()) as ApiProduct[];
+                const data = (await res.json()) as { pins?: PinterestDeal[] };
                 if (!cancelled) {
-                    setProducts(Array.isArray(data) ? data : []);
+                    setPins(Array.isArray(data.pins) ? data.pins : []);
                 }
             } catch (err) {
                 if (!cancelled) {
-                    setError("Unable to load products right now.");
+                    setError("Unable to load Pinterest pins right now.");
                 }
             } finally {
                 if (!cancelled) {
@@ -102,13 +64,15 @@ export default function FeaturedDeals({ searchTerm, matchingBoardsCount }: Featu
     }, [searchTerm]);
 
     const normalizedQuery = searchTerm.trim().toLowerCase();
-    const sourceProducts = products.length > 0 ? products : FALLBACK_PRODUCTS;
+    const sourceDeals = pins.filter(
+        (pin) => pin.image && pin.link
+    ) as Array<PinterestDeal & { image: string; link: string }>;
     const filteredProducts = normalizedQuery.length
-        ? sourceProducts.filter((product) => {
-            const haystack = `${product.title || ""} ${product.description || ""}`.toLowerCase();
+        ? sourceDeals.filter((deal) => {
+            const haystack = `${deal.title || ""} ${deal.description || ""}`.toLowerCase();
             return haystack.includes(normalizedQuery);
         })
-        : sourceProducts;
+        : sourceDeals;
     const showNoResults =
         normalizedQuery.length > 0 && filteredProducts.length === 0 && matchingBoardsCount === 0;
     return (
@@ -124,7 +88,7 @@ export default function FeaturedDeals({ searchTerm, matchingBoardsCount }: Featu
                         </p>
                     </div>
                     <a
-                        href={PINTEREST_BOARDS[0].url}
+                        href="https://in.pinterest.com/kendallcore01/"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="hidden md:flex items-center space-x-2 text-primary font-bold border-b-2 border-primary mb-2 transition-opacity hover:opacity-70"
@@ -146,27 +110,25 @@ export default function FeaturedDeals({ searchTerm, matchingBoardsCount }: Featu
 
                 {showNoResults && (
                     <div className="mb-8 text-sm text-soft-gray">
-                        No matching products or boards found.
+                        No matching pins or boards found.
                     </div>
                 )}
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                    {filteredProducts.map((product, index) => (
-                        <ProductCard
-                            key={`${product.link || "product"}-${index}`}
-                            name={product.title || "Amazon Product"}
-                            description={product.description}
-                            image={product.image}
-                            price={product.price}
-                            affiliateLink={product.link || "https://www.amazon.in/"}
-                            ctaLabel="Buy on Amazon"
+                    {filteredProducts.map((pin, index) => (
+                        <PinterestDealCard
+                            key={`${pin.link}-${index}`}
+                            title={pin.title}
+                            description={pin.description}
+                            imageUrl={pin.image}
+                            pinUrl={pin.link}
                         />
                     ))}
                 </div>
 
                 <div className="mt-12 md:hidden">
                     <a
-                        href={PINTEREST_BOARDS[0].url}
+                        href="https://in.pinterest.com/kendallcore01/"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="w-full btn-outline inline-flex items-center justify-center"

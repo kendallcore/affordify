@@ -17,15 +17,6 @@ export default function Navbar() {
 
                     {/* Desktop Navigation */}
                     <div className="hidden md:flex items-center space-x-8">
-                        <Link href="/deals" className="text-soft-gray hover:text-primary font-medium transition-colors">
-                            Top Deals
-                        </Link>
-                        <Link href="/reviews" className="text-soft-gray hover:text-primary font-medium transition-colors">
-                            Expert Reviews
-                        </Link>
-                        <Link href="/guides" className="text-soft-gray hover:text-primary font-medium transition-colors">
-                            Buying Guides
-                        </Link>
                         <Link href="/about" className="text-soft-gray hover:text-primary font-medium transition-colors">
                             About
                         </Link>

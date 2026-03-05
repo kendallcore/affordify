@@ -6,7 +6,6 @@ import Footer from "@/components/layout/Footer";
 import Hero from "@/components/sections/Hero";
 import FeaturedDeals from "@/components/sections/FeaturedDeals";
 import ComparisonTable from "@/components/ui/ComparisonTable";
-import TrustSection from "@/components/sections/TrustSection";
 import Newsletter from "@/components/sections/Newsletter";
 import { PINTEREST_BOARDS } from "@/data/pinterest-boards";
 
@@ -39,7 +38,6 @@ export default function Home() {
             />
             {/* Expert Reviews section removed per request. */}
             <ComparisonTable />
-            <TrustSection />
             <Newsletter />
             <Footer />
         </main>
