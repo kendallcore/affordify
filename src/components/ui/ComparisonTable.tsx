@@ -26,26 +26,29 @@ export default function ComparisonTable() {
                     </p>
                 </div>
 
-                <div className="overflow-x-auto">
-                    <div className="min-w-[800px] flex gap-4 p-4">
+                <div className="space-y-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         {COMPARISON_DATA.map((item, idx) => (
                             <div
                                 key={idx}
-                                className={`flex-1 rounded-2xl p-6 border transition-all duration-300 ${item.isBestOverall
-                                    ? "border-primary bg-primary/5 shadow-premium-hover scale-105 relative z-10"
+                                className={`relative rounded-3xl p-7 border transition-all duration-300 ${item.isBestOverall
+                                    ? "border-primary/40 bg-primary/5 shadow-premium-hover"
                                     : "border-gray-100 bg-white shadow-premium"
                                     }`}
                             >
                                 {item.isBestOverall && (
-                                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-white text-xs font-bold px-4 py-1 rounded-full uppercase tracking-widest whitespace-nowrap">
+                                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-white text-[11px] font-bold px-4 py-1 rounded-full uppercase tracking-widest whitespace-nowrap shadow-sm">
                                         Best Overall
                                     </div>
                                 )}
 
                                 <div className="flex flex-col items-center text-center">
-                                    <div className="w-32 h-32 rounded-xl overflow-hidden mb-4 bg-gray-50">
-                                        <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                                    </div>
+                                    <div
+                                        role="img"
+                                        aria-label={item.name}
+                                        className="w-32 h-32 rounded-2xl overflow-hidden mb-5 bg-gradient-to-br from-primary/10 via-white to-accent/10 border border-gray-100 shadow-sm bg-center bg-cover"
+                                        style={{ backgroundImage: `url(${item.image})` }}
+                                    />
                                     <h3 className="text-xl font-bold text-soft-black mb-1">{item.name}</h3>
                                     <div className="flex items-center space-x-1 text-yellow-400 mb-2">
                                         <Star size={16} fill="currentColor" />
@@ -53,7 +56,7 @@ export default function ComparisonTable() {
                                     </div>
                                     <span className="text-2xl font-poppins font-bold text-primary mb-6">{item.price}</span>
 
-                                    <div className="w-full space-y-4 mb-8">
+                                    <div className="w-full space-y-3.5 mb-8">
                                         {item.features.map((feature, fIdx) => (
                                             <div key={fIdx} className="flex items-center space-x-3 text-sm text-soft-gray">
                                                 <Check size={16} className="text-accent flex-shrink-0" />

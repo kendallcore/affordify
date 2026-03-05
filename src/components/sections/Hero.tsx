@@ -7,61 +7,23 @@ import type { PinterestBoard } from "@/data/pinterest-boards";
 
 interface HeroProps {
     searchTerm: string;
-    isSearchOpen: boolean;
     matchingBoards: PinterestBoard[];
     onSearchChange: (value: string) => void;
-    onSearchOpen: (open: boolean) => void;
 }
 
 export default function Hero({
     searchTerm,
-    isSearchOpen,
     matchingBoards,
     onSearchChange,
-    onSearchOpen
 }: HeroProps) {
     const inputRef = useRef<HTMLInputElement | null>(null);
     const isSearching = useMemo(() => searchTerm.trim().length > 0, [searchTerm]);
 
     useEffect(() => {
-        function handleKeyDown(event: KeyboardEvent) {
-            const target = event.target as HTMLElement | null;
-            const isEditable =
-                target?.tagName === "INPUT" ||
-                target?.tagName === "TEXTAREA" ||
-                target?.isContentEditable;
-            if (isEditable || event.metaKey || event.ctrlKey || event.altKey) {
-                return;
-            }
-            if (!isSearchOpen && event.key.length === 1) {
-                onSearchOpen(true);
-                onSearchChange(`${searchTerm}${event.key}`);
-                requestAnimationFrame(() => {
-                    inputRef.current?.focus();
-                });
-            }
-        }
-
-        // Expand the search bar when the user starts typing anywhere on the page.
-        window.addEventListener("keydown", handleKeyDown);
-        return () => {
-            window.removeEventListener("keydown", handleKeyDown);
-        };
-    }, [isSearchOpen, onSearchChange, onSearchOpen, searchTerm]);
-
-    useEffect(() => {
-        if (isSearchOpen) {
-            requestAnimationFrame(() => {
-                inputRef.current?.focus();
-            });
-        }
-    }, [isSearchOpen]);
-
-    useEffect(() => {
-        if (searchTerm.trim().length > 0 && !isSearchOpen) {
-            onSearchOpen(true);
-        }
-    }, [isSearchOpen, onSearchOpen, searchTerm]);
+        requestAnimationFrame(() => {
+            inputRef.current?.focus();
+        });
+    }, []);
 
     return (
         <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
@@ -89,27 +51,22 @@ export default function Hero({
                     </p>
 
                     <div className="max-w-3xl mx-auto relative mb-12">
-                        {/* Search is collapsed by default and expands only when actively searching. */}
+                        {/* Search is always visible. */}
                         <div
-                            className={`mx-auto flex items-center bg-white shadow-premium border border-gray-100 rounded-2xl p-2 transition-all duration-300 focus-within:shadow-premium-hover focus-within:border-primary/20 ${isSearchOpen ? "w-full opacity-100" : "w-14 opacity-80"}`}
+                            className="mx-auto flex items-center bg-white shadow-premium border border-gray-100 rounded-2xl p-2 transition-all duration-300 focus-within:shadow-premium-hover focus-within:border-primary/20 w-full"
                         >
-                            <button
-                                type="button"
-                                onClick={() => onSearchOpen(!isSearchOpen)}
-                                aria-label="Toggle search"
-                                className="px-4 text-soft-gray hover:text-primary transition-colors"
-                            >
+                            <span className="px-4 text-soft-gray">
                                 <Search size={24} />
-                            </button>
+                            </span>
                             <input
                                 ref={inputRef}
                                 type="text"
                                 placeholder="Search products or Pinterest boards..."
                                 value={searchTerm}
                                 onChange={(event) => onSearchChange(event.target.value)}
-                                className={`w-full py-4 text-lg outline-none bg-transparent transition-all duration-300 ${isSearchOpen ? "opacity-100" : "opacity-0 pointer-events-none w-0"}`}
+                                className="w-full py-4 text-lg outline-none bg-transparent"
                             />
-                            <button className={`hidden sm:block btn-primary whitespace-nowrap px-8 transition-all duration-300 ${isSearchOpen ? "opacity-100" : "opacity-0 pointer-events-none w-0 px-0"}`}>
+                            <button className="hidden sm:block btn-primary whitespace-nowrap px-8 transition-all duration-300">
                                 Search Deals
                             </button>
                         </div>
