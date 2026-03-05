@@ -54,14 +54,17 @@ export default function FeaturedDeals({}: FeaturedDealsProps) {
 
     const filteredProducts = sourceDeals;
     return (
-        <section id="explore-top-deals" className="py-20 bg-off-white">
+        <section
+            id="explore-top-deals"
+            className="py-20 bg-off-white dark:bg-slate-900 scroll-mt-28"
+        >
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
                     <div className="max-w-xl">
-                        <h2 className="text-4xl font-poppins font-extrabold text-soft-black mb-4">
+                        <h2 className="text-4xl font-poppins font-extrabold text-soft-black mb-4 dark:text-white">
                             Explore Top Deals
                         </h2>
-                        <p className="text-soft-gray text-lg">
+                        <p className="text-soft-gray text-lg dark:text-slate-300">
                             Affordable deals powered by Pinterest products and Amazon deals India shoppers love.
                         </p>
                     </div>
@@ -80,7 +83,7 @@ export default function FeaturedDeals({}: FeaturedDealsProps) {
                 )}
 
                 {isLoading && (
-                    <div className="mb-8 flex items-center space-x-3 text-soft-gray text-sm">
+                    <div className="mb-8 flex items-center space-x-3 text-soft-gray text-sm dark:text-slate-300">
                         <span className="h-4 w-4 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
                         <span>Loading affordable deals...</span>
                     </div>

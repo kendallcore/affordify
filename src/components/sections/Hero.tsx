@@ -23,28 +23,28 @@ export default function Hero() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6 }}
                 >
-                    <div className="inline-flex items-center space-x-2 bg-primary/10 text-primary px-4 py-2 rounded-full mb-6">
+                    <div className="inline-flex items-center space-x-2 bg-primary/10 text-primary px-4 py-2 rounded-full mb-6 dark:bg-primary/20">
                         <span className="text-sm font-semibold uppercase tracking-wider">Live Pinterest Deals</span>
                     </div>
 
-                    <h1 className="text-5xl md:text-7xl font-poppins font-extrabold text-soft-black mb-6 leading-tight">
+                    <h1 className="text-5xl md:text-7xl font-poppins font-extrabold text-soft-black mb-6 leading-tight dark:text-white">
                         Discover deals worth saving.{" "}
                         <span className="text-primary">Updated automatically.</span>
                     </h1>
 
-                    <p className="max-w-2xl mx-auto text-xl text-soft-gray mb-10 leading-relaxed">
+                    <p className="max-w-2xl mx-auto text-xl text-soft-gray mb-10 leading-relaxed dark:text-slate-300">
                         Affordify syncs the latest pins from Kendall Core's Pinterest boards so you can
                         shop trending finds in one place. Fresh picks, real images, and direct links.
                     </p>
 
-                    <div className="flex flex-wrap justify-center gap-4 mb-12 text-sm text-soft-gray">
-                        <span className="px-4 py-2 rounded-full bg-white/70 border border-gray-100 shadow-sm">
+                    <div className="flex flex-wrap justify-center gap-4 mb-12 text-sm text-soft-gray dark:text-slate-300">
+                        <span className="px-4 py-2 rounded-full bg-white/70 border border-gray-100 shadow-sm dark:bg-slate-900/70 dark:border-slate-800">
                             Auto-synced pins
                         </span>
-                        <span className="px-4 py-2 rounded-full bg-white/70 border border-gray-100 shadow-sm">
+                        <span className="px-4 py-2 rounded-full bg-white/70 border border-gray-100 shadow-sm dark:bg-slate-900/70 dark:border-slate-800">
                             30-minute refresh
                         </span>
-                        <span className="px-4 py-2 rounded-full bg-white/70 border border-gray-100 shadow-sm">
+                        <span className="px-4 py-2 rounded-full bg-white/70 border border-gray-100 shadow-sm dark:bg-slate-900/70 dark:border-slate-800">
                             Direct Pinterest links
                         </span>
                     </div>

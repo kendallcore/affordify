@@ -19,7 +19,7 @@ export default function PinterestDealCard({
     return (
         <motion.div
             whileHover={{ y: -8 }}
-            className="group bg-white rounded-2xl border border-gray-100 shadow-premium hover:shadow-premium-hover transition-all duration-300 flex flex-col h-full overflow-hidden"
+            className="group bg-white rounded-2xl border border-gray-100 shadow-premium hover:shadow-premium-hover transition-all duration-300 flex flex-col h-full overflow-hidden dark:bg-slate-900 dark:border-slate-800"
         >
             <div className="relative aspect-square overflow-hidden bg-gray-50">
                 <img
@@ -32,13 +32,10 @@ export default function PinterestDealCard({
             </div>
 
             <div className="p-6 flex flex-col flex-grow">
-                <h3 className="text-xl font-poppins font-bold text-soft-black mb-2 group-hover:text-primary transition-colors">
+                <h3 className="text-xl font-poppins font-bold text-soft-black mb-6 group-hover:text-primary transition-colors dark:text-slate-100">
                     {title}
                 </h3>
-                <p className="text-sm text-soft-gray mb-6 flex-grow line-clamp-2">
-                    {description || "Explore this deal on Affordify."}
-                </p>
-                <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-50">
+                <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-50 dark:border-slate-800">
                     <a
                         href={pinUrl}
                         target="_blank"
