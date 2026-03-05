@@ -4,8 +4,6 @@ import { useEffect, useState } from "react";
 import PinterestDealCard from "../ui/PinterestDealCard";
 
 interface FeaturedDealsProps {
-    searchTerm: string;
-    matchingBoardsCount: number;
 }
 
 interface PinterestDeal {
@@ -15,11 +13,10 @@ interface PinterestDeal {
     link: string;
 }
 
-export default function FeaturedDeals({ searchTerm, matchingBoardsCount }: FeaturedDealsProps) {
+export default function FeaturedDeals({}: FeaturedDealsProps) {
     const [pins, setPins] = useState<PinterestDeal[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [isFiltering, setIsFiltering] = useState(false);
 
     useEffect(() => {
         let cancelled = false;
@@ -51,32 +48,13 @@ export default function FeaturedDeals({ searchTerm, matchingBoardsCount }: Featu
         };
     }, []);
 
-    useEffect(() => {
-        if (searchTerm.trim().length === 0) {
-            setIsFiltering(false);
-            return;
-        }
-        setIsFiltering(true);
-        const timer = window.setTimeout(() => {
-            setIsFiltering(false);
-        }, 250);
-        return () => window.clearTimeout(timer);
-    }, [searchTerm]);
-
-    const normalizedQuery = searchTerm.trim().toLowerCase();
     const sourceDeals = pins.filter(
         (pin) => pin.image && pin.link
     ) as Array<PinterestDeal & { image: string; link: string }>;
-    const filteredProducts = normalizedQuery.length
-        ? sourceDeals.filter((deal) => {
-            const haystack = `${deal.title || ""} ${deal.description || ""}`.toLowerCase();
-            return haystack.includes(normalizedQuery);
-        })
-        : sourceDeals;
-    const showNoResults =
-        normalizedQuery.length > 0 && filteredProducts.length === 0 && matchingBoardsCount === 0;
+
+    const filteredProducts = sourceDeals;
     return (
-        <section className="py-20 bg-off-white">
+        <section id="explore-top-deals" className="py-20 bg-off-white">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
                     <div className="max-w-xl">
@@ -101,16 +79,10 @@ export default function FeaturedDeals({ searchTerm, matchingBoardsCount }: Featu
                     <div className="mb-6 text-sm text-red-600">{error}</div>
                 )}
 
-                {(isLoading || isFiltering) && (
+                {isLoading && (
                     <div className="mb-8 flex items-center space-x-3 text-soft-gray text-sm">
                         <span className="h-4 w-4 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
                         <span>Loading affordable deals...</span>
-                    </div>
-                )}
-
-                {showNoResults && (
-                    <div className="mb-8 text-sm text-soft-gray">
-                        No matching pins or boards found.
                     </div>
                 )}
 

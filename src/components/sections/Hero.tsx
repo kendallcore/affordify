@@ -1,29 +1,15 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
-import { Search } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
-import type { PinterestBoard } from "@/data/pinterest-boards";
 
-interface HeroProps {
-    searchTerm: string;
-    matchingBoards: PinterestBoard[];
-    onSearchChange: (value: string) => void;
-}
-
-export default function Hero({
-    searchTerm,
-    matchingBoards,
-    onSearchChange,
-}: HeroProps) {
-    const inputRef = useRef<HTMLInputElement | null>(null);
-    const isSearching = useMemo(() => searchTerm.trim().length > 0, [searchTerm]);
-
-    useEffect(() => {
-        requestAnimationFrame(() => {
-            inputRef.current?.focus();
-        });
-    }, []);
+export default function Hero() {
+    const scrollToDeals = () => {
+        const target = document.getElementById("explore-top-deals");
+        if (target) {
+            target.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+    };
 
     return (
         <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
@@ -38,62 +24,50 @@ export default function Hero({
                     transition={{ duration: 0.6 }}
                 >
                     <div className="inline-flex items-center space-x-2 bg-primary/10 text-primary px-4 py-2 rounded-full mb-6">
-                        <Search size={16} />
-                        <span className="text-sm font-semibold uppercase tracking-wider">Smart Shopping Companion</span>
+                        <span className="text-sm font-semibold uppercase tracking-wider">Live Pinterest Deals</span>
                     </div>
 
                     <h1 className="text-5xl md:text-7xl font-poppins font-extrabold text-soft-black mb-6 leading-tight">
-                        Buy Smarter. <span className="text-primary">Live Better.</span>
+                        Discover deals worth saving.{" "}
+                        <span className="text-primary">Updated automatically.</span>
                     </h1>
 
                     <p className="max-w-2xl mx-auto text-xl text-soft-gray mb-10 leading-relaxed">
-                        Affordify finds the best products at the best prices — so you never overpay again. Data-driven recommendations for the tech-savvy shopper.
+                        Affordify syncs the latest pins from Kendall Core's Pinterest boards so you can
+                        shop trending finds in one place. Fresh picks, real images, and direct links.
                     </p>
 
-                    <div className="max-w-3xl mx-auto relative mb-12">
-                        {/* Search is always visible. */}
-                        <div
-                            className="mx-auto flex items-center bg-white shadow-premium border border-gray-100 rounded-2xl p-2 transition-all duration-300 focus-within:shadow-premium-hover focus-within:border-primary/20 w-full"
-                        >
-                            <span className="px-4 text-soft-gray">
-                                <Search size={24} />
-                            </span>
-                            <input
-                                ref={inputRef}
-                                type="text"
-                                placeholder="Search products or Pinterest boards..."
-                                value={searchTerm}
-                                onChange={(event) => onSearchChange(event.target.value)}
-                                className="w-full py-4 text-lg outline-none bg-transparent"
-                            />
-                            <button className="hidden sm:block btn-primary whitespace-nowrap px-8 transition-all duration-300">
-                                Search Deals
-                            </button>
-                        </div>
-
-                        {isSearching && matchingBoards.length > 0 && (
-                            <div className="mt-4 flex flex-wrap justify-center gap-3">
-                                <span className="text-sm text-soft-gray">Matching boards:</span>
-                                {matchingBoards.map((board) => (
-                                    <a
-                                        key={board.url}
-                                        href={board.url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-sm text-primary hover:underline"
-                                    >
-                                        {board.name}
-                                    </a>
-                                ))}
-                            </div>
-                        )}
-                        {/* Trending callouts removed to keep focus on search and pinned products. */}
+                    <div className="flex flex-wrap justify-center gap-4 mb-12 text-sm text-soft-gray">
+                        <span className="px-4 py-2 rounded-full bg-white/70 border border-gray-100 shadow-sm">
+                            Auto-synced pins
+                        </span>
+                        <span className="px-4 py-2 rounded-full bg-white/70 border border-gray-100 shadow-sm">
+                            30-minute refresh
+                        </span>
+                        <span className="px-4 py-2 rounded-full bg-white/70 border border-gray-100 shadow-sm">
+                            Direct Pinterest links
+                        </span>
                     </div>
 
                     <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6">
-                        <button className="btn-primary w-full sm:w-auto px-10 py-4 text-lg">
+                        <a
+                            href="#explore-top-deals"
+                            onClick={(event) => {
+                                event.preventDefault();
+                                scrollToDeals();
+                            }}
+                            className="btn-primary w-full sm:w-auto px-10 py-4 text-lg"
+                        >
                             Explore Top Deals
-                        </button>
+                        </a>
+                        <a
+                            href="https://in.pinterest.com/kendallcore01/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-primary border border-primary/30 rounded-full hover:bg-primary/5 transition-colors"
+                        >
+                            View Pinterest <ArrowRight size={18} className="ml-2" />
+                        </a>
                     </div>
                 </motion.div>
             </div>

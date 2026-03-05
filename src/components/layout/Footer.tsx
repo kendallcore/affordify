@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
 
 export default function Footer() {
     return (
@@ -15,20 +14,6 @@ export default function Footer() {
                         <p className="text-soft-gray text-sm leading-relaxed mb-6">
                             Helping modern consumers make smarter buying decisions through data-driven recommendations, honest reviews, and constant price monitoring.
                         </p>
-                        <div className="flex space-x-4">
-                            <a href="#" className="p-2 bg-gray-50 rounded-full text-soft-gray hover:text-primary transition-colors hover:bg-primary/5">
-                                <Twitter size={18} />
-                            </a>
-                            <a href="#" className="p-2 bg-gray-50 rounded-full text-soft-gray hover:text-primary transition-colors hover:bg-primary/5">
-                                <Facebook size={18} />
-                            </a>
-                            <a href="#" className="p-2 bg-gray-50 rounded-full text-soft-gray hover:text-primary transition-colors hover:bg-primary/5">
-                                <Instagram size={18} />
-                            </a>
-                            <a href="#" className="p-2 bg-gray-50 rounded-full text-soft-gray hover:text-primary transition-colors hover:bg-primary/5">
-                                <Linkedin size={18} />
-                            </a>
-                        </div>
                     </div>
 
                     <div>
