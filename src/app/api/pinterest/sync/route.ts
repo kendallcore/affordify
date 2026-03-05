@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { syncDealsFromPins } from "@/lib/pinterestDeals";
-import { fetchPinterestPins } from "@/lib/pinterestApi";
+import { fetchAllPinterestPinsRaw } from "../../../../../services/pinterestService";
 
 export const runtime = "nodejs";
 
@@ -14,13 +14,11 @@ export async function POST(request: Request) {
     }
 
     const { searchParams } = new URL(request.url);
-    const boardId = searchParams.get("boardId");
     const pageSize = Number(searchParams.get("pageSize") ?? 24);
 
     try {
-        const rawPins = await fetchPinterestPins({
+        const rawPins = await fetchAllPinterestPinsRaw({
             accessToken,
-            boardId,
             pageSize
         });
         const deals = await syncDealsFromPins(rawPins);

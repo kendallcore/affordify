@@ -1,4 +1,4 @@
-import { fetchPinterestPins } from "@/lib/pinterestApi";
+import { fetchAllPinterestPinsRaw } from "../../services/pinterestService";
 import { syncDealsFromPins } from "@/lib/pinterestDeals";
 
 const SYNC_INTERVAL_MS = 30 * 60 * 1000;
@@ -19,14 +19,9 @@ export const startPinterestSyncScheduler = () => {
         return;
     }
 
-    const boardId = process.env.PINTEREST_BOARD_ID ?? null;
-
     const runSync = async () => {
         try {
-            const rawPins = await fetchPinterestPins({
-                accessToken,
-                boardId
-            });
+            const rawPins = await fetchAllPinterestPinsRaw({ accessToken });
             await syncDealsFromPins(rawPins);
         } catch {
             // Swallow errors to keep the scheduler running.

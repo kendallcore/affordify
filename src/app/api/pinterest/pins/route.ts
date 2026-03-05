@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
+import { syncDealsFromPins } from "@/lib/pinterestDeals";
 import {
-    syncDealsFromPins,
-    readDeals,
-    type PinterestRawPin
-} from "@/lib/pinterestDeals";
-import { fetchPinterestPins, fetchPinsWithFallback } from "@/lib/pinterestApi";
+    fetchAllPinterestPinsRaw,
+    mapPinterestPins
+} from "../../../../../services/pinterestService";
 import { startPinterestSyncScheduler } from "@/lib/pinterestScheduler";
 
 export const runtime = "nodejs";
@@ -13,8 +12,11 @@ startPinterestSyncScheduler();
 
 const CACHE_TTL_MS = 30 * 60 * 1000;
 const DEFAULT_PAGE_SIZE = 24;
+const MAX_PINS = 40;
+const CACHE_VERSION = 3;
 
 type CacheEntry = {
+    version: number;
     fetchedAt: number;
     pins: PinterestPin[];
 };
@@ -24,15 +26,21 @@ const globalForPinterest = globalThis as unknown as {
 };
 
 type PinterestPin = {
+    id: string;
     image: string;
     title: string;
     description: string;
     link: string;
+    createdAt?: string | null;
+    destination?: string | null;
 };
 
 const getCachedPins = () => {
     const cached = globalForPinterest.pinterestCache;
     if (!cached) {
+        return null;
+    }
+    if (cached.version !== CACHE_VERSION) {
         return null;
     }
     if (Date.now() - cached.fetchedAt > CACHE_TTL_MS) {
@@ -43,44 +51,61 @@ const getCachedPins = () => {
 
 const setCachedPins = (pins: PinterestPin[]) => {
     globalForPinterest.pinterestCache = {
+        version: CACHE_VERSION,
         pins,
         fetchedAt: Date.now(),
     };
 };
 
-const pickBestImage = (pin: PinterestRawPin): string | null => {
-    const images = Object.values(pin.media?.images ?? {});
-    if (images.length === 0) {
-        return null;
-    }
-    const best = images
+const sortPinsNewestFirst = (pins: PinterestPin[]) =>
+    pins
         .slice()
         .sort((a, b) => {
-            const scoreA = (a.width ?? 0) * (a.height ?? 0);
-            const scoreB = (b.width ?? 0) * (b.height ?? 0);
-            return scoreB - scoreA;
-        })[0];
-    return best?.url ?? null;
+            const dateA = a.createdAt ? Date.parse(a.createdAt) : 0;
+            const dateB = b.createdAt ? Date.parse(b.createdAt) : 0;
+            return dateB - dateA;
+        });
+
+const stripMetadata = (pins: PinterestPin[]) =>
+    pins.map(({ createdAt, destination, ...rest }) => rest);
+
+const dedupePinsById = (pins: PinterestPin[]) => {
+    const deduped = new Map<string, PinterestPin>();
+    for (const pin of pins) {
+        const id = pin.id?.toString().trim();
+        if (!id || deduped.has(id)) {
+            continue;
+        }
+        deduped.set(id, pin);
+    }
+    return Array.from(deduped.values());
 };
 
-const mapPins = (rawPins: PinterestRawPin[]): PinterestPin[] =>
-    rawPins
-        .map((pin) => {
-            const image = pickBestImage(pin);
-            const link =
-                pin.url ??
-                (pin.id ? `https://www.pinterest.com/pin/${pin.id}/` : null);
-            if (!image || !link) {
-                return null;
-            }
-            return {
-                image,
-                title: pin.title ?? pin.alt_text ?? "Untitled",
-                description: pin.description ?? "",
-                link
-            };
-        })
-        .filter(Boolean) as PinterestPin[];
+const normalizeUrl = (value?: string | null) => {
+    if (!value) {
+        return "";
+    }
+    try {
+        const parsed = new URL(value);
+        return `${parsed.origin}${parsed.pathname}`.toLowerCase();
+    } catch {
+        return value.trim().toLowerCase();
+    }
+};
+
+const dedupePinsByContent = (pins: PinterestPin[]) => {
+    const deduped = new Map<string, PinterestPin>();
+    for (const pin of pins) {
+        const destination = normalizeUrl(pin.destination);
+        const image = normalizeUrl(pin.image);
+        const key = destination || image || pin.id;
+        if (!key || deduped.has(key)) {
+            continue;
+        }
+        deduped.set(key, pin);
+    }
+    return Array.from(deduped.values());
+};
 
 export async function GET(request: Request) {
     const cachedPins = getCachedPins();
@@ -105,29 +130,24 @@ export async function GET(request: Request) {
     }
 
     const { searchParams } = new URL(request.url);
-    const boardId = searchParams.get("boardId");
-    const fallbackBoardId = process.env.PINTEREST_BOARD_ID ?? null;
     const pageSize = Number(searchParams.get("pageSize") ?? DEFAULT_PAGE_SIZE);
 
     try {
-        const rawPins = boardId
-            ? await fetchPinterestPins({
-                  accessToken,
-                  boardId,
-                  pageSize
-              })
-            : await fetchPinsWithFallback({
-                  accessToken,
-                  fallbackBoardId,
-                  pageSize
-              });
-        const pins = mapPins(rawPins);
+        const rawPins = await fetchAllPinterestPinsRaw({ accessToken, pageSize });
+        const pins = mapPinterestPins(rawPins) as PinterestPin[];
+        const dedupedPins = dedupePinsById(pins);
+        const contentUniquePins = dedupePinsByContent(dedupedPins);
+        const sortedPins = sortPinsNewestFirst(contentUniquePins).slice(
+            0,
+            MAX_PINS
+        );
+        const responsePins = stripMetadata(sortedPins);
         await syncDealsFromPins(rawPins);
 
-        setCachedPins(pins);
+        setCachedPins(responsePins);
 
         return NextResponse.json(
-            { pins, cached: false },
+            { pins: responsePins, cached: false },
             {
                 headers: {
                     "Cache-Control": "public, max-age=0, s-maxage=1800",
