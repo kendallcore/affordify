@@ -17,6 +17,7 @@ export default function FeaturedDeals({}: FeaturedDealsProps) {
     const [pins, setPins] = useState<PinterestDeal[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const REFRESH_INTERVAL_MS = 30 * 60 * 1000;
 
     useEffect(() => {
         let cancelled = false;
@@ -43,10 +44,12 @@ export default function FeaturedDeals({}: FeaturedDealsProps) {
         }
 
         load();
+        const interval = window.setInterval(load, REFRESH_INTERVAL_MS);
         return () => {
             cancelled = true;
+            window.clearInterval(interval);
         };
-    }, []);
+    }, [REFRESH_INTERVAL_MS]);
 
     const sourceDeals = pins.filter(
         (pin) => pin.image && pin.link
