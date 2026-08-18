@@ -85,7 +85,14 @@ export const readDeals = async (): Promise<PinterestDeal[]> => {
 };
 
 export const writeDeals = async (deals: PinterestDeal[]) => {
-    await fs.writeFile(DEALS_PATH, JSON.stringify(deals, null, 2), "utf-8");
+    try {
+        await fs.writeFile(DEALS_PATH, JSON.stringify(deals, null, 2), "utf-8");
+    } catch (err) {
+        console.warn(
+            "[pinterestDeals] Disk write skipped (read-only environment):",
+            err instanceof Error ? err.message : err
+        );
+    }
 };
 
 const dedupeDeals = (deals: PinterestDeal[]): PinterestDeal[] => {
