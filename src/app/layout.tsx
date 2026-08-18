@@ -16,6 +16,13 @@ const poppins = Poppins({
 export const metadata: Metadata = {
     title: "Affordify | Buy Smarter. Live Better.",
     description: "Affordify finds the best products at the best prices — so you never overpay.",
+    icons: {
+        icon: [
+            { url: "/icon.png", type: "image/png" },
+            { url: "/favicon.ico" }
+        ],
+        apple: "/apple-icon.png"
+    }
 };
 
 export default function RootLayout({
