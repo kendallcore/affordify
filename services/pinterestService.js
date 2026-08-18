@@ -150,19 +150,96 @@ export const mapPinterestPin = (pin) => {
     };
 };
 
-export const fetchAllPinterestPinsRaw = async ({
-    accessToken,
-    pageSize
-} = {}) => {
-    if (!accessToken) {
-        throw new Error("Missing Pinterest access token.");
+export const fetchPinterestRssPins = async (username = "kendallcore01") => {
+    const url = `https://in.pinterest.com/${encodeURIComponent(username)}/feed.rss`;
+    const response = await fetch(url, {
+        headers: {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        }
+    });
+
+    if (!response.ok) {
+        throw new Error(`Pinterest RSS fetch failed with status ${response.status}`);
     }
 
-    const size = pageSize && pageSize > 0 ? pageSize : DEFAULT_PAGE_SIZE;
-    const boards = await fetchAllBoards(accessToken);
-    const boardIds = boards.map((board) => board?.id).filter(Boolean);
+    const xml = await response.text();
+    const items = xml.split("<item>").slice(1);
 
-    return fetchPinsForBoards({ accessToken, boardIds, pageSize: size });
+    const pins = [];
+    for (let index = 0; index < items.length; index++) {
+        const item = items[index];
+        const titleMatch = item.match(/<title>([\s\S]*?)<\/title>/);
+        const linkMatch = item.match(/<link>([\s\S]*?)<\/link>/);
+        const imgMatch = item.match(/src="([^"]+)"/) || item.match(/src=&quot;([^&]+)&quot;/);
+        const pubDateMatch = item.match(/<pubDate>([\s\S]*?)<\/pubDate>/);
+        const guidMatch = item.match(/<guid>([\s\S]*?)<\/guid>/);
+        const descMatch = item.match(/<description>([\s\S]*?)<\/description>/);
+
+        const rawTitle = titleMatch ? titleMatch[1] : "";
+        const title = rawTitle
+            .replace(/&amp;/g, "&")
+            .replace(/&lt;/g, "<")
+            .replace(/&gt;/g, ">")
+            .replace(/&quot;/g, '"')
+            .trim();
+
+        const link = linkMatch ? linkMatch[1].trim() : "";
+        let image = imgMatch ? imgMatch[1] : "";
+        if (image) {
+            image = image.replace(/\/236x\//, "/1200x/");
+        }
+
+        const pubDate = pubDateMatch ? pubDateMatch[1].trim() : null;
+        const guid = guidMatch ? guidMatch[1].trim() : "";
+        const id = guid ? guid.split("/").filter(Boolean).pop() || String(index) : String(index);
+
+        let description = "";
+        if (descMatch) {
+            description = descMatch[1]
+                .replace(/&lt;[\s\S]*?&gt;/g, "")
+                .replace(/<[\s\S]*?>/g, "")
+                .replace(/&amp;/g, "&")
+                .replace(/&quot;/g, '"')
+                .trim();
+        }
+
+        if (id && image && link) {
+            pins.push({
+                id,
+                title: title || "Untitled",
+                description,
+                image,
+                link,
+                destination: link,
+                createdAt: pubDate ? new Date(pubDate).toISOString() : new Date().toISOString()
+            });
+        }
+    }
+
+    return pins;
+};
+
+export const fetchAllPinterestPinsRaw = async ({
+    accessToken,
+    pageSize,
+    username = "kendallcore01"
+} = {}) => {
+    if (accessToken) {
+        try {
+            const size = pageSize && pageSize > 0 ? pageSize : DEFAULT_PAGE_SIZE;
+            const boards = await fetchAllBoards(accessToken);
+            const boardIds = boards.map((board) => board?.id).filter(Boolean);
+            const pins = await fetchPinsForBoards({ accessToken, boardIds, pageSize: size });
+            if (pins.length > 0) {
+                return pins;
+            }
+        } catch (error) {
+            console.warn("Pinterest OAuth API failed, switching to Pinterest profile RSS feed:", error);
+        }
+    }
+
+    // Fallback to RSS feed if access token is invalid, expired, or missing
+    return fetchPinterestRssPins(username);
 };
 
 export const fetchAllPinterestPins = async ({
@@ -176,7 +253,7 @@ export const fetchAllPinterestPins = async ({
 export const mapPinterestPins = (rawPins = []) => {
     const deduped = new Map();
     for (const pin of rawPins) {
-        const mapped = mapPinterestPin(pin);
+        const mapped = pin.image && pin.link ? pin : mapPinterestPin(pin);
         if (!mapped) {
             continue;
         }

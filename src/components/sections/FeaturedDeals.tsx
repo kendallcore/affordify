@@ -55,7 +55,23 @@ export default function FeaturedDeals({}: FeaturedDealsProps) {
         (pin) => pin.image && pin.link
     ) as Array<PinterestDeal & { image: string; link: string }>;
 
-    const filteredProducts = sourceDeals;
+    const filteredProducts = sourceDeals.reduce<PinterestDeal[]>((acc, current) => {
+        const normLink = current.link.toLowerCase().trim();
+        const normImg = current.image.toLowerCase().trim();
+        const normTitle = current.title.toLowerCase().replace(/^(deal:\s*)/i, "").trim();
+
+        const exists = acc.some((item) => {
+            const itemLink = item.link.toLowerCase().trim();
+            const itemImg = item.image.toLowerCase().trim();
+            const itemTitle = item.title.toLowerCase().replace(/^(deal:\s*)/i, "").trim();
+            return itemLink === normLink || itemImg === normImg || itemTitle === normTitle;
+        });
+
+        if (!exists) {
+            acc.push(current);
+        }
+        return acc;
+    }, []);
     return (
         <section
             id="explore-top-deals"

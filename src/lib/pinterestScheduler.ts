@@ -1,7 +1,7 @@
 import { fetchAllPinterestPinsRaw } from "../../services/pinterestService";
 import { syncDealsFromPins } from "@/lib/pinterestDeals";
 
-const SYNC_INTERVAL_MS = 30 * 60 * 1000;
+const SYNC_INTERVAL_MS = 15 * 60 * 1000;
 
 const globalForScheduler = globalThis as {
     pinterestSyncStarted?: boolean;
@@ -14,17 +14,16 @@ export const startPinterestSyncScheduler = () => {
     }
     globalForScheduler.pinterestSyncStarted = true;
 
-    const accessToken = process.env.PINTEREST_ACCESS_TOKEN;
-    if (!accessToken) {
-        return;
-    }
-
     const runSync = async () => {
         try {
+            const accessToken = process.env.PINTEREST_ACCESS_TOKEN;
             const rawPins = await fetchAllPinterestPinsRaw({ accessToken });
-            await syncDealsFromPins(rawPins);
-        } catch {
-            // Swallow errors to keep the scheduler running.
+            if (Array.isArray(rawPins) && rawPins.length > 0) {
+                await syncDealsFromPins(rawPins);
+                console.log(`[Pinterest Sync] Synced ${rawPins.length} pins from Pinterest.`);
+            }
+        } catch (err) {
+            console.warn("[Pinterest Sync] Sync attempt encountered error:", err);
         }
     };
 

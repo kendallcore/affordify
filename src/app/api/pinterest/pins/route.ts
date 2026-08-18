@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { syncDealsFromPins } from "@/lib/pinterestDeals";
+import { readDeals, syncDealsFromPins } from "@/lib/pinterestDeals";
 import {
     fetchAllPinterestPinsRaw,
     mapPinterestPins
@@ -13,7 +13,7 @@ startPinterestSyncScheduler();
 const CACHE_TTL_MS = 30 * 60 * 1000;
 const DEFAULT_PAGE_SIZE = 24;
 const MAX_PINS = 40;
-const CACHE_VERSION = 3;
+const CACHE_VERSION = 4;
 
 type CacheEntry = {
     version: number;
@@ -57,6 +57,57 @@ const setCachedPins = (pins: PinterestPin[]) => {
     };
 };
 
+const normalizeText = (value?: string | null) =>
+    (value || "")
+        .toLowerCase()
+        .replace(/^(deal:\s*)/i, "")
+        .trim();
+
+const dedupePinsByContent = (pins: PinterestPin[]) => {
+    const deduped: PinterestPin[] = [];
+    const seenLinks = new Set<string>();
+    const seenImages = new Set<string>();
+    const seenTitles = new Set<string>();
+
+    for (const pin of pins) {
+        const link = normalizeUrl(pin.link || pin.destination);
+        const image = normalizeUrl(pin.image);
+        const title = normalizeText(pin.title);
+
+        if (
+            (link && seenLinks.has(link)) ||
+            (image && seenImages.has(image)) ||
+            (title && seenTitles.has(title))
+        ) {
+            continue;
+        }
+
+        if (link) seenLinks.add(link);
+        if (image) seenImages.add(image);
+        if (title) seenTitles.add(title);
+        deduped.push(pin);
+    }
+    return deduped;
+};
+
+const getFallbackPins = async (): Promise<PinterestPin[]> => {
+    try {
+        const deals = await readDeals();
+        const mapped = deals
+            .map((deal) => ({
+                id: deal.id,
+                image: deal.imageUrl || "",
+                title: deal.title,
+                description: deal.description || "",
+                link: deal.affiliateLink || deal.pinUrl || (deal.slug ? `/deals/${deal.slug}` : "#"),
+            }))
+            .filter((pin) => pin.image && pin.link);
+        return dedupePinsByContent(mapped);
+    } catch {
+        return [];
+    }
+};
+
 const sortPinsNewestFirst = (pins: PinterestPin[]) =>
     pins
         .slice()
@@ -93,20 +144,6 @@ const normalizeUrl = (value?: string | null) => {
     }
 };
 
-const dedupePinsByContent = (pins: PinterestPin[]) => {
-    const deduped = new Map<string, PinterestPin>();
-    for (const pin of pins) {
-        const destination = normalizeUrl(pin.destination);
-        const image = normalizeUrl(pin.image);
-        const key = destination || image || pin.id;
-        if (!key || deduped.has(key)) {
-            continue;
-        }
-        deduped.set(key, pin);
-    }
-    return Array.from(deduped.values());
-};
-
 export async function GET(request: Request) {
     const cachedPins = getCachedPins();
     if (cachedPins) {
@@ -114,21 +151,13 @@ export async function GET(request: Request) {
             { pins: cachedPins, cached: true },
             {
                 headers: {
-                    "Cache-Control": "public, max-age=0, s-maxage=1800",
+                    "Cache-Control": "public, max-age=0, s-maxage=300",
                 },
             }
         );
     }
 
     const accessToken = process.env.PINTEREST_ACCESS_TOKEN;
-    if (!accessToken) {
-        console.error("Missing PINTEREST_ACCESS_TOKEN environment variable.");
-        return NextResponse.json(
-            { error: "Missing Pinterest access token." },
-            { status: 500 }
-        );
-    }
-
     const { searchParams } = new URL(request.url);
     const pageSize = Number(searchParams.get("pageSize") ?? DEFAULT_PAGE_SIZE);
 
@@ -150,12 +179,24 @@ export async function GET(request: Request) {
             { pins: responsePins, cached: false },
             {
                 headers: {
-                    "Cache-Control": "public, max-age=0, s-maxage=1800",
+                    "Cache-Control": "public, max-age=0, s-maxage=300",
                 },
             }
         );
     } catch (error) {
-        console.error("Pinterest API error", error);
+        console.warn("Pinterest fetch error, serving fallback deals from JSON:", error);
+        const fallbackPins = await getFallbackPins();
+        if (fallbackPins.length > 0) {
+            setCachedPins(fallbackPins);
+            return NextResponse.json(
+                { pins: fallbackPins, cached: false, fallback: true },
+                {
+                    headers: {
+                        "Cache-Control": "public, max-age=0, s-maxage=300",
+                    },
+                }
+            );
+        }
         return NextResponse.json(
             {
                 error: "Failed to fetch pins from Pinterest.",

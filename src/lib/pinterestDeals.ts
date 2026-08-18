@@ -88,6 +88,34 @@ export const writeDeals = async (deals: PinterestDeal[]) => {
     await fs.writeFile(DEALS_PATH, JSON.stringify(deals, null, 2), "utf-8");
 };
 
+const dedupeDeals = (deals: PinterestDeal[]): PinterestDeal[] => {
+    const result: PinterestDeal[] = [];
+    const seenLinks = new Set<string>();
+    const seenImages = new Set<string>();
+    const seenTitles = new Set<string>();
+
+    for (const deal of deals) {
+        const link = (deal.affiliateLink || deal.pinUrl || "").toLowerCase().trim();
+        const image = (deal.imageUrl || "").toLowerCase().trim();
+        const title = (deal.title || "").toLowerCase().replace(/^(deal:\s*)/i, "").trim();
+
+        if (
+            (link && seenLinks.has(link)) ||
+            (image && seenImages.has(image)) ||
+            (title && seenTitles.has(title))
+        ) {
+            continue;
+        }
+
+        if (link) seenLinks.add(link);
+        if (image) seenImages.add(image);
+        if (title) seenTitles.add(title);
+        result.push(deal);
+    }
+
+    return result;
+};
+
 export const syncDealsFromPins = async (
     rawPins: PinterestRawPin[]
 ): Promise<PinterestDeal[]> => {
@@ -109,8 +137,9 @@ export const syncDealsFromPins = async (
         };
     });
 
-    await writeDeals(nextDeals);
-    return nextDeals;
+    const dedupedDeals = dedupeDeals(nextDeals);
+    await writeDeals(dedupedDeals);
+    return dedupedDeals;
 };
 
 export const getDealBySlug = async (slug: string) => {

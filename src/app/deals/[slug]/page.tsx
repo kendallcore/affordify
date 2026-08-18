@@ -23,7 +23,7 @@ const buildMetadata = (deal: PinterestDeal): Metadata => ({
         description: deal.description || `Explore ${deal.title} on Affordify.`,
         url: `/deals/${deal.slug}`,
         images: deal.imageUrl ? [{ url: deal.imageUrl }] : undefined,
-        type: "product"
+        type: "website"
     },
     other: {
         "pinterest-rich-pin": "true"
